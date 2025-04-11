@@ -31,6 +31,9 @@ export default function HeaderClient() {
                                 <Link href="/my-chatbots" className="text-foreground hover:text-primary transition-colors">
                                     My Chatbots
                                 </Link>
+                                <Link href="/insights" className="text-foreground hover:text-primary transition-colors">
+                                    Insights
+                                </Link>
                                 {/* Add other authenticated links here if needed */}
                                 <Button variant="ghost" onClick={auth.logout}>Logout</Button>
                             </>
