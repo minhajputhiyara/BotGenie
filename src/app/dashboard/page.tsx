@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileUploader } from './components/FileUploader';
 import { ChatbotConfirmation } from './components/ChatbotConfirmation';
@@ -184,7 +184,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[rgb(var(--background))]">
+      <div className="min-h-screen bg-violet-900">
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 border border-gray-100 dark:border-gray-700">
             <div className="flex items-center mb-6">

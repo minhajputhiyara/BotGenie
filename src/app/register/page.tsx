@@ -157,7 +157,7 @@ export default function RegisterPage() {
 
         <p className="mt-10 text-center text-sm text-[rgb(var(--secondary))]">
           Already a member?{' '}
-          <Link href="/login" className="font-semibold leading-6 text-primary hover:text-primary-light">
+          <Link href="/login" className="font-semibold leading-6 text-secondary hover:text-primary-light">
             Sign in here
           </Link>
         </p>

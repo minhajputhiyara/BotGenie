@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 relative overflow-hidden">
+      <section className="w-full py-6 md:py-12 lg:py-16 xl:py-24 relative overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-20 left-1/4 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
@@ -20,7 +20,7 @@ export default function Home() {
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
                 Create Intelligent <span className="bg-clip-text text-white bg-gradient-to-r from-primary to-primary-light">Customer Support</span> Chatbots
               </h1>
-              <p className="mx-auto lg:mx-0 max-w-[700px] text-secondary md:text-xl">
+              <p className="mx-auto lg:mx-0 max-w-[700px] text-slate-900 md:text-xl">
                 Build AI-powered chatbots with RAG technology, sentiment analysis, and seamless Google Sheets integration.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mt-4 justify-center lg:justify-start">
@@ -42,7 +42,7 @@ export default function Home() {
                       <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
-                    <div className="text-xs text-white/70">ChatbotMaker</div>
+                    <div className="text-xs text-white/70">BotGenie</div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
@@ -72,7 +72,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-primary/5 relative overflow-hidden">
+      <section id="features" className="w-full py-6 md:py-12 lg:py-16 bg-primary/5 relative overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-30">
           <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] bg-repeat"></div>
         </div>
@@ -99,7 +99,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32">
+      <section className="w-full py-6 md:py-12 lg:py-16">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
             <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
@@ -128,7 +128,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-primary/5">
+      <section className="w-full py-6 md:py-12 lg:py-16 bg-primary/5">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
             <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
@@ -141,7 +141,7 @@ export default function Home() {
             {pricingPlans.map((plan, index) => (
               <div key={index} className={`card text-white ${index === 1 ? 'relative scale-105 z-10 animated-gradient' : ''}`}>
                 {index === 1 && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-primary text-sm font-bold px-4 py-1 rounded-full">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-gray-900 text-sm font-bold px-4 py-1 rounded-full">
                     Most Popular
                   </div>
                 )}
@@ -157,7 +157,7 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <a href={plan.link} className={`block text-center py-2 px-4 rounded-lg ${index === 1 ? 'bg-white text-primary font-medium' : 'bg-white/20 text-white'} hover:bg-white/90 hover:text-primary transition-colors`}>
+                <a href={plan.link} className={`block text-center py-2 px-4 rounded-lg ${index === 1 ? 'bg-white text-gray-900 font-medium' : 'bg-white/20 text-white'} hover:bg-white/90 hover:text-primary transition-colors`}>
                   {index === 1 ? 'Get Started' : 'Choose Plan'}
                 </a>
               </div>
@@ -167,17 +167,17 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 relative overflow-hidden">
+      <section className="w-full py-6 md:py-12 lg:py-16 relative overflow-hidden">
         <div className="absolute inset-0 animated-gradient opacity-90"></div>
         <div className="container px-4 md:px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Customer Support?</h2>
-            <p className="text-xl mb-8">Join thousands of businesses using ChatbotMaker to deliver exceptional customer experiences.</p>
+            <p className="text-xl mb-8">Join thousands of businesses using BotGenie to deliver exceptional customer experiences.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/signup" className="px-6 py-3 bg-black text-primary font-medium rounded-lg hover:bg-white/90 transition-colors">
+              <a href="/signup" className="px-6 py-3 bg-white text-gray-900 font-medium rounded-lg hover:bg-white/90 transition-colors">
                 Start Your Free Trial
               </a>
-              <a href="/contact" className="px-6 py-3 bg-transparent border border-white text-white rounded-lg hover:bg-white/10 transition-colors">
+              <a href="/contact" className="px-6 py-3 bg-transparent border border-white text-white rounded-lg hover:bg-violet-800 transition-colors">
                 Contact Sales
               </a>
             </div>

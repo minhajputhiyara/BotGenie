@@ -3,10 +3,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button'; // Assuming you use Shadcn UI button
+import { Button } from '@/components/ui/button';
+import { usePathname } from 'next/navigation';
 
 export default function HeaderClient() {
     const auth = useAuth();
+    const pathname = usePathname();
+
+    const getLinkClass = (href: string) => {
+        const baseClass = "text-foreground hover:text-primary transition-colors";
+        const activeClass = "bg-purple-100 text-purple-900 rounded px-2 py-1 font-medium";
+        return pathname === href ? `${activeClass}` : baseClass;
+    };
 
     return (
         <header className="bg-background shadow-md sticky top-0 z-50">
@@ -14,8 +22,8 @@ export default function HeaderClient() {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo/Brand Name */}
                     <div className="flex-shrink-0">
-                        <Link href="/" className="text-2xl font-bold text-primary">
-                           Chatbot<span className='text-secondary'>Maker</span>
+                        <Link href="/" className="text-2xl font-bold text-violet-900 text-primary">
+                           Bot<span className='text-secondary'>Genie</span>
                         </Link>
                     </div>
 
@@ -25,13 +33,13 @@ export default function HeaderClient() {
                             <p>Loading...</p>
                         ) : auth.token ? (
                             <>
-                                <Link href="/dashboard" className="text-foreground hover:text-primary transition-colors">
+                                <Link href="/dashboard" className={getLinkClass('/dashboard')}>
                                     Dashboard
                                 </Link>
-                                <Link href="/my-chatbots" className="text-foreground hover:text-primary transition-colors">
+                                <Link href="/my-chatbots" className={getLinkClass('/my-chatbots')}>
                                     My Chatbots
                                 </Link>
-                                <Link href="/insights" className="text-foreground hover:text-primary transition-colors">
+                                <Link href="/insights" className={getLinkClass('/insights')}>
                                     Insights
                                 </Link>
                                 {/* Add other authenticated links here if needed */}
@@ -39,10 +47,10 @@ export default function HeaderClient() {
                             </>
                         ) : (
                             <>
-                                <Link href="/login" className="text-foreground hover:text-primary transition-colors">
+                                <Link href="/login" className="text-black font-bold hover:text-foreground transition-colors">
                                     Login
                                 </Link>
-                                <Link href="/register" className="text-foreground hover:text-primary transition-colors">
+                                <Link href="/register" className="text-black font-bold hover:text-foreground transition-colors">
                                     Register
                                 </Link>
                             </>

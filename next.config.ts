@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
     domains: [
       'media.istockphoto.com',
       'upload.wikimedia.org',
-      'via.placeholder.com'
+      'via.placeholder.com',
+      'www.cio.com', // Added this domain
     ],
   },
 };
