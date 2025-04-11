@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot Widget Test Page</h1>
+    <p>You should see a chat button in the bottom-right corner.</p>
+    <p>If you don't see the widget, please check the browser console for any errors.</p>
+    
+    <!-- For debugging -->
+    <script>
+        console.log('Loading chatbot widget...');
+    </script>
+    
+    <!-- Chatbot Widget -->
+    <script 
+        src="http://192.168.1.77:3000/api/widget/63ff7295-8047-4c7c-8508-4288708083c8"
+        onerror="console.error('Failed to load chatbot widget script')"
+        onload="console.log('Chatbot widget script loaded successfully')"
+    ></script>
+</body>
+</html>

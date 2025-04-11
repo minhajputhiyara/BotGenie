@@ -1,0 +1,34 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // Get the pathname of the request
+  const pathname = request.nextUrl.pathname;
+
+  // Clone the response headers
+  const response = NextResponse.next();
+  const headers = new Headers(response.headers);
+
+  // Add security headers
+  headers.set('X-Frame-Options', 'ALLOW-FROM *');
+  headers.set('Content-Security-Policy', "frame-ancestors *");
+
+  // If it's the widget API or widget page, add CORS headers
+  if (pathname.startsWith('/api/widget/') || pathname.startsWith('/widget/')) {
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', '*');
+    headers.set('Access-Control-Allow-Credentials', 'true');
+  }
+
+  // Create a new response with the modified headers
+  return NextResponse.next({
+    request: {
+      headers: headers,
+    },
+  });
+}
+
+export const config = {
+  matcher: ['/api/widget/:path*', '/widget/:path*'],
+};

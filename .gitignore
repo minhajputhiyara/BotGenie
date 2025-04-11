@@ -39,3 +39,37 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node.js / Next.js
+node_modules/
+.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.so
+dist/
+build/
+*.log
+
+# Database / Vector Store
+backend/data/chatbots/
+backend/chroma_db/ # Adjust if ChromaDB data is stored elsewhere
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
