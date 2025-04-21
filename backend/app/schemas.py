@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 # --- User Schemas ---
@@ -63,6 +63,61 @@ class Chatbot(ChatbotBase): # Inherit name from ChatbotBase
         # Use from_attributes instead of orm_mode for Pydantic v2
         # orm_mode = True
         from_attributes = True
+
+# --- Chat Session Schemas ---
+
+class ChatMessageBase(BaseModel):
+    role: str
+    content: str
+
+class ChatMessage(ChatMessageBase):
+    id: int
+    session_id: str
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+class ChatMessageCreate(ChatMessageBase):
+    pass
+
+class ChatSessionBase(BaseModel):
+    chatbot_id: str
+    user_identifier: str
+
+class ChatSession(ChatSessionBase):
+    id: str
+    started_at: datetime
+    last_activity: datetime
+    is_active: bool
+    messages: List[ChatMessage] = []
+
+    class Config:
+        from_attributes = True
+
+class ChatSessionCreate(ChatSessionBase):
+    pass
+
+# --- Insight Schemas ---
+
+class InsightBase(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    problem_summary: Optional[str] = None
+    bot_solved: Optional[bool] = None
+    human_needed: Optional[bool] = None
+    emotion: Optional[str] = None
+
+class Insight(InsightBase):
+    id: int
+    session_id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class InsightCreate(InsightBase):
+    session_id: str
 
 # Ensure User schema definition comes after Chatbot definition or use forward refs
 # The forward declaration above handles this.

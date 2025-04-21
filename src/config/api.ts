@@ -7,4 +7,5 @@ export const API_ENDPOINTS = {
     queryChatbot: (collectionName: string) => `${API_BASE_URL}/api/chatbots/${collectionName}/query`,
     deleteChatbot: (collectionName: string) => `${API_BASE_URL}/api/chatbots/${collectionName}`,
     getChatbotDetails: `${API_BASE_URL}/api/chatbots/details`,
+    insights: `${API_BASE_URL}/api/insights`,
 };

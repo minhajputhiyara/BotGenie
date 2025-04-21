@@ -20,7 +20,14 @@ import os
 from dotenv import load_dotenv
 from .security import get_current_active_user, authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from . import models, schemas, crud 
-from .db_session import get_db 
+from .db_session import get_db, engine, Base
+from .crud_sessions import (
+    create_chat_session, get_chat_session, get_active_session_by_user,
+    update_session_activity, close_session, get_inactive_sessions,
+    add_message_to_session, get_session_messages, create_insight,
+    get_all_insights, get_insight_by_session
+)
+from .services.conversation_analyzer import ConversationAnalyzer
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +36,11 @@ load_dotenv()
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY environment variable is not set")
+
+# Initialize database tables
+print("Initializing database tables...")
+Base.metadata.create_all(bind=engine)
+print("Database tables initialized successfully!")
 
 app = FastAPI()
 
@@ -44,9 +56,115 @@ app.add_middleware(
 # Initialize services
 vector_store = VectorStore()
 groq_chat = GroqChat()
+conversation_analyzer = ConversationAnalyzer()
 
 # Store progress updates
 chatbot_progress = {}
+
+# Create a background task for checking inactive sessions
+from fastapi import BackgroundTasks
+import asyncio
+import threading
+
+# Flag to control the background task
+background_task_running = False
+
+async def periodic_session_check(app_state: dict):
+    """Run session check periodically in the background"""
+    while app_state["running"]:
+        try:
+            # Create a new database session for this check
+            from .db_session import SessionLocal
+            db = SessionLocal()
+            
+            print("\n----- SCHEDULED SESSION CHECK -----")
+            print(f"Running scheduled check at {datetime.now()}")
+            
+            # Check for inactive sessions
+            await check_inactive_sessions(db)
+            
+            # Close the database session
+            db.close()
+            
+        except Exception as e:
+            print(f"Error in periodic session check: {str(e)}")
+        
+        # Wait for 60 seconds before the next check
+        await asyncio.sleep(60)  # Check every minute
+
+@app.on_event("startup")
+async def startup_event():
+    """Start the background task when the application starts"""
+    global background_task_running
+    
+    # Create a shared state dictionary
+    app_state = {"running": True}
+    
+    # Start the background task
+    asyncio.create_task(periodic_session_check(app_state))
+    background_task_running = True
+    print("Started periodic session check background task")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop the background task when the application shuts down"""
+    global background_task_running
+    background_task_running = False
+    print("Stopped periodic session check background task")
+
+# Background task to check for inactive sessions and generate insights
+async def check_inactive_sessions(db: Session):
+    print("\n----- CHECKING FOR INACTIVE SESSIONS -----")
+    # Get inactive sessions (timeout after 1 minute for testing)
+    inactive_sessions = get_inactive_sessions(db, timeout_minutes=1)
+    print(f"Found {len(inactive_sessions)} inactive sessions")
+    
+    for session in inactive_sessions:
+        print(f"\nProcessing inactive session: {session.id}")
+        print(f"Chatbot ID: {session.chatbot_id}")
+        print(f"User: {session.user_identifier}")
+        print(f"Started at: {session.started_at}")
+        print(f"Last activity: {session.last_activity}")
+        
+        # Get all messages for the session
+        messages = get_session_messages(db, session.id)
+        print(f"Found {len(messages)} messages in the session")
+        
+        if messages:
+            # Print message contents for debugging
+            print("\nSession messages:")
+            for i, msg in enumerate(messages):
+                print(f"  {i+1}. {msg.role}: {msg.content[:50]}...")
+                
+            # Analyze the conversation
+            print("\nAnalyzing conversation with LLM...")
+            insight = await conversation_analyzer.analyze_conversation(session.id, messages)
+            
+            if insight:
+                print("\nInsight generated:")
+                print(f"  Name: {insight.name}")
+                print(f"  Email: {insight.email}")
+                print(f"  Problem Summary: {insight.problem_summary}")
+                print(f"  Bot Solved: {insight.bot_solved}")
+                print(f"  Human Needed: {insight.human_needed}")
+                print(f"  Emotion: {insight.emotion}")
+                
+                # Create insight in the database
+                try:
+                    db_insight = create_insight(db, insight)
+                    print(f"\nInsight saved to database with ID: {db_insight.id}")
+                except Exception as e:
+                    print(f"Error saving insight to database: {str(e)}")
+            else:
+                print("Failed to generate insight from conversation")
+            
+            # Close the session
+            close_session(db, session.id)
+            print(f"Session {session.id} marked as inactive")
+        else:
+            print("No messages found in session, skipping analysis")
+    
+    print("----- INACTIVE SESSION CHECK COMPLETE -----\n")
 
 # --- Authentication / User Endpoints ---
 
@@ -308,13 +426,40 @@ async def get_chatbot_details(chatbot_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chatbots/{collection_name}/query")
-async def query_chatbot(collection_name: str, query: dict = Body(...)):
+async def query_chatbot(collection_name: str, query: dict = Body(...), request: Request = None, db: Session = Depends(get_db)):
     try:
         # Get chatbot metadata
         chatbot_dir = Path(f"data/chatbots/{collection_name}")
         metadata_path = chatbot_dir / "metadata.json"
         async with aiofiles.open(metadata_path, 'r') as f:
             metadata = json.loads(await f.read())
+
+        # Session management - extract user identifier (could be IP, session ID, etc.)
+        user_identifier = request.client.host if request else "anonymous"
+        
+        # Get or create active session for this user
+        try:
+            session = get_active_session_by_user(db, collection_name, user_identifier)
+            if not session:
+                session_data = schemas.ChatSessionCreate(
+                    chatbot_id=collection_name,
+                    user_identifier=user_identifier
+                )
+                session = create_chat_session(db, session_data)
+            else:
+                # Update last activity timestamp
+                session = update_session_activity(db, session.id)
+            
+            # Add user message to session
+            user_message = schemas.ChatMessageCreate(
+                role="user",
+                content=query["query"]
+            )
+            add_message_to_session(db, session.id, user_message)
+        except Exception as session_error:
+            # If there's an error with session management, log it but continue
+            print(f"Error in session management: {str(session_error)}")
+            # This allows the chatbot to still function even if session tracking fails
 
         # Get relevant chunks from vector store
         results = vector_store.query_collection(collection_name, query["query"])
@@ -336,41 +481,68 @@ async def query_chatbot(collection_name: str, query: dict = Body(...)):
         ]
 
         # Get response from Groq
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {GROQ_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "llama3-70b-8192",
-                    "messages": conversation,
-                    "temperature": 0.7,
-                    "max_tokens": 1000,
-                }
-            )
-            
-            if response.status_code != 200:
-                # Attempt to get error details from Groq's response body
-                error_detail = f"Error from Groq API (Status: {response.status_code})"
-                try:
-                    groq_error_body = response.json() # Try parsing as JSON
-                    error_detail += f": {json.dumps(groq_error_body)}"
-                except json.JSONDecodeError:
-                    try:
-                        groq_error_body = response.text() # Fallback to text
-                        error_detail += f": {groq_error_body}"
-                    except Exception:
-                        error_detail += " (Could not read response body)"
-                print(f"Groq API Error: {error_detail}") # Log the detailed error
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=error_detail # Include Groq's error if possible
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:  
+                response = await client.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {GROQ_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "llama3-70b-8192",
+                        "messages": conversation,
+                        "temperature": 0.7,
+                        "max_tokens": 1000,
+                    }
                 )
                 
-            result = response.json()
-            return {"response": result["choices"][0]["message"]["content"]}
+                if response.status_code != 200:
+                    # Attempt to get error details from Groq's response body
+                    error_detail = f"Error from Groq API (Status: {response.status_code})"
+                    try:
+                        groq_error_body = response.json() # Try parsing as JSON
+                        error_detail += f": {json.dumps(groq_error_body)}"
+                    except json.JSONDecodeError:
+                        try:
+                            groq_error_body = response.text() # Fallback to text
+                            error_detail += f": {groq_error_body}"
+                        except Exception:
+                            error_detail += " (Could not read response body)"
+                    print(f"Groq API Error: {error_detail}") # Log the detailed error
+                    raise HTTPException(
+                        status_code=response.status_code,
+                        detail=error_detail # Include Groq's error if possible
+                    )
+                    
+                result = response.json()
+                assistant_response = result["choices"][0]["message"]["content"]
+        except (httpx.ConnectTimeout, httpx.ConnectError, httpx.ReadTimeout) as e:
+            # Handle connection timeouts and errors
+            print(f"API Connection Error: {str(e)}")
+            assistant_response = "I'm sorry, I'm having trouble connecting to my knowledge base right now. Please try again in a moment or contact support if the issue persists."
+        except Exception as e:
+            # Handle other API errors
+            print(f"Unexpected API Error: {str(e)}")
+            assistant_response = "I apologize, but I encountered an unexpected error. Please try again or contact support if the issue persists."
+            
+        # Try to add assistant message to session
+        try:
+            if 'session' in locals() and session:
+                assistant_message = schemas.ChatMessageCreate(
+                    role="assistant",
+                    content=assistant_response
+                )
+                add_message_to_session(db, session.id, assistant_message)
+                
+                # Run background task to check for inactive sessions
+                background_tasks = BackgroundTasks()
+                background_tasks.add_task(check_inactive_sessions, db)
+        except Exception as session_error:
+            # If there's an error with session management, log it but continue
+            print(f"Error in session message tracking: {str(session_error)}")
+        
+        return {"response": assistant_response}
 
     except Exception as e:
         print(f"\n--- DETAILED ERROR IN QUERY_CHATBOT ---")
@@ -400,3 +572,14 @@ async def stream_chat(collection_name: str, request: Request):
             print(f"Error in stream: {str(e)}")
             
     return EventSourceResponse(event_generator())
+
+@app.get("/api/insights")
+async def get_insights(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    """Get all insights with pagination"""
+    try:
+        insights = get_all_insights(db, skip=skip, limit=limit)
+        return insights
+    except Exception as e:
+        print(f"Error fetching insights: {str(e)}")
+        # Return empty list instead of error if table doesn't exist yet
+        return []

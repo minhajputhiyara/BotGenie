@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func # For default timestamp
 
@@ -24,3 +24,47 @@ class Chatbot(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     owner = relationship("User", back_populates="chatbots")
+    sessions = relationship("ChatSession", back_populates="chatbot")
+
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+    
+    id = Column(String, primary_key=True, index=True)
+    chatbot_id = Column(String, ForeignKey("chatbots.id"), nullable=False)
+    user_identifier = Column(String, index=True)  # Could be email, IP, or session ID
+    started_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_activity = Column(DateTime(timezone=True), server_default=func.now())
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    chatbot = relationship("Chatbot", back_populates="sessions")
+    messages = relationship("ChatMessage", back_populates="session")
+    insight = relationship("Insight", uselist=False, back_populates="session")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, ForeignKey("chat_sessions.id"), nullable=False)
+    role = Column(String, nullable=False)  # 'user' or 'assistant'
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship
+    session = relationship("ChatSession", back_populates="messages")
+
+class Insight(Base):
+    __tablename__ = "insights"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, ForeignKey("chat_sessions.id"), unique=True, nullable=False)
+    name = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    problem_summary = Column(Text, nullable=True)
+    bot_solved = Column(Boolean, nullable=True)
+    human_needed = Column(Boolean, nullable=True)
+    emotion = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship
+    session = relationship("ChatSession", back_populates="insight")
