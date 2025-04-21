@@ -1,11 +1,11 @@
 'use client';
 
-
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export default function HeaderClient() {
     const auth = useAuth();
@@ -23,7 +23,14 @@ export default function HeaderClient() {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo/Brand Name */}
                     <div className="flex-shrink-0">
-                        <Link href="/" className="text-2xl font-bold text-violet-900 text-primary">
+                        <Link href="/" className="text-2xl font-bold text-violet-900 text-primary flex items-center gap-2">
+                           <Image 
+                             src="/genie-logo.png" 
+                             alt="Genie Logo" 
+                             width={56} 
+                             height={56} 
+                             className="rounded-full"
+                           />
                            Bot<span className='text-secondary'>Genie</span>
                         </Link>
                     </div>

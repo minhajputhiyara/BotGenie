@@ -14,13 +14,13 @@ export default function Home() {
         <div className="container px-4 md:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             <div className="flex flex-col space-y-4 text-center lg:text-left lg:w-1/2">
-              <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20 backdrop-blur-sm">
+              <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full text-lg bg-white font-bold text-violet-950 border-3 border-primary/20 backdrop-blur-sm">
                 AI-Powered Chatbot Platform
               </div>
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
                 Create Intelligent <span className="bg-clip-text text-white bg-gradient-to-r from-primary to-primary-light">Customer Support</span> Chatbots
               </h1>
-              <p className="mx-auto lg:mx-0 max-w-[700px] text-slate-900 md:text-xl">
+              <p className="mx-auto lg:mx-0 max-w-[700px] text-gray-300 md:text-xl">
                 Build AI-powered chatbots with RAG technology, sentiment analysis, and seamless Google Sheets integration.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mt-4 justify-center lg:justify-start">
@@ -78,11 +78,11 @@ export default function Home() {
         </div>
         <div className="container px-4 md:px-6 relative z-10">
           <div className="text-center mb-12">
-            <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
+            <div className="inline-block px-3 py-1 mb-4 text-xl rounded-full bg-white text-purple-900 border-3 border-primary/20">
               Features
             </div>
-            <h2 className="text-3xl font-bold">Powerful Capabilities</h2>
-            <p className="text-secondary mt-4 max-w-2xl mx-auto">Everything you need to create intelligent, responsive chatbots that delight your customers.</p>
+            <h2 className="text-3xl font-bold text-white">Powerful Capabilities</h2>
+            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Everything you need to create intelligent, responsive chatbots that delight your customers.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
@@ -98,70 +98,71 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="w-full py-6 md:py-12 lg:py-16">
+      {/* Process and Pricing Section - Combined */}
+      <section className="w-full py-6 md:py-12 lg:py-16 bg-blue-50">
         <div className="container px-4 md:px-6">
-          <div className="text-center mb-12">
-            <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
-              Process
-            </div>
-            <h2 className="text-3xl font-bold">How It Works</h2>
-            <p className="text-secondary mt-4 max-w-2xl mx-auto">Build and deploy your chatbot in minutes, not days.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-            {steps.map((step, index) => (
-              <div key={index} className="relative flex flex-col items-center">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl z-10">
-                  {index + 1}
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="absolute top-0 left-[calc(50%+1rem)] h-0.5 w-[calc(100%-2rem)] bg-gradient-to-r from-primary to-transparent"></div>
-                )}
-                <div className="pt-8 text-center">
-                  <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                  <p className="text-secondary">{step.description}</p>
-                </div>
+          {/* How It Works */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
+                Process
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="w-full py-6 md:py-12 lg:py-16 bg-primary/5">
-        <div className="container px-4 md:px-6">
-          <div className="text-center mb-12">
-            <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
-              Pricing
+              <h2 className="text-3xl font-bold">How It Works</h2>
+              <p className="text-secondary mt-4 max-w-2xl mx-auto">Build and deploy your chatbot in minutes, not days.</p>
             </div>
-            <h2 className="text-3xl font-bold">Simple, Transparent Pricing</h2>
-            <p className="text-secondary mt-4 max-w-2xl mx-auto">Choose the plan that works best for your needs.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <div key={index} className={`card text-white ${index === 1 ? 'relative scale-105 z-10 animated-gradient' : ''}`}>
-                {index === 1 && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-gray-900 text-sm font-bold px-4 py-1 rounded-full">
-                    Most Popular
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+              {steps.map((step, index) => (
+                <div key={index} className="relative flex flex-col items-center">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-primary flex items-center justify-center border-2 border-purple-900 text-purple-900 font-bold text-4xl z-10">
+                    {index + 1}
                   </div>
-                )}
-                <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-3xl font-bold mb-4">${plan.price}<span className="text-sm font-normal">/month</span></p>
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center">
-                      <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <a href={plan.link} className={`block text-center py-2 px-4 rounded-lg ${index === 1 ? 'bg-white text-gray-900 font-medium' : 'bg-white/20 text-white'} hover:bg-white/90 hover:text-primary transition-colors`}>
-                  {index === 1 ? 'Get Started' : 'Choose Plan'}
-                </a>
+                  {index < steps.length - 1 && (
+                    <div className="absolute top-0 left-[calc(50%+1rem)] h-0.5 w-[calc(100%-2rem)] bg-gradient-to-r from-primary to-transparent"></div>
+                  )}
+                  <div className="pt-8 text-center">
+                    <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+                    <p className="text-secondary">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div>
+            <div className="text-center mb-12">
+              <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-primary/10 text-primary-light border border-primary/20">
+                Pricing
               </div>
-            ))}
+              <h2 className="text-3xl font-bold">Simple, Transparent Pricing</h2>
+              <p className="text-secondary mt-4 max-w-2xl mx-auto">Choose the plan that works best for your needs.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {pricingPlans.map((plan, index) => (
+                <div key={index} className={`card text-white ${index === 1 ? 'relative scale-105 z-10 animated-gradient' : ''}`}>
+                  {index === 1 && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-gray-900 text-sm border border-gray-900 font-bold px-4 py-1 rounded-full">
+                      Most Popular
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <p className="text-3xl font-bold mb-4">${plan.price}<span className="text-sm font-normal">/month</span></p>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href={plan.link} className={`block text-center py-2 px-4 rounded-lg ${index === 1 ? 'bg-white text-gray-900 font-medium' : 'bg-white/20 text-white'} hover:bg-white/90 hover:text-primary transition-colors`}>
+                    {index === 1 ? 'Get Started' : 'Choose Plan'}
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
