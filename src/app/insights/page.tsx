@@ -12,6 +12,9 @@ type Emotion = "admiration" | "amusement" | "anger" | "annoyance" | "approval" |
     "joy" | "love" | "nervousness" | "optimism" | "pride" | "realization" | 
     "relief" | "remorse" | "sadness" | "surprise" | "neutral";
 
+// Define status options for the dropdown
+type StatusOption = "Solved" | "Processing" | "Not Solved";
+
 // Define the structure for each insight entry with the new emotion type
 interface InsightEntry {
   id: number;
@@ -23,7 +26,14 @@ interface InsightEntry {
   emotion: Emotion | null; 
   session_id: string;
   created_at: string;
+  status?: StatusOption; // Optional status field
 }
+
+// Type for sort configuration
+type SortConfig = {
+  key: keyof InsightEntry | 'priority';
+  direction: 'ascending' | 'descending';
+};
 
 // Helper function to get priority level string and row background class
 const getPriorityDetails = (botSolved: boolean | null, humanNeeded: boolean | null): { level: 'Low' | 'Medium' | 'High', rowClass: string } => {
@@ -49,6 +59,7 @@ const InsightsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
 
   useEffect(() => {
     const fetchInsights = async () => {
@@ -89,6 +100,107 @@ const InsightsPage = () => {
     fetchInsights();
   }, [token]);
 
+  // Helper function to update status for a specific insight
+  const updateStatus = (id: number, newStatus: StatusOption) => {
+    setInsightsData(prevData => 
+      prevData.map(item => 
+        item.id === id ? { ...item, status: newStatus } : item
+      )
+    );
+    // Note: This is frontend-only for now as requested
+    // In the future, you might want to add an API call here to persist the status
+  };
+
+  // Function to handle sorting
+  const requestSort = (key: keyof InsightEntry | 'priority') => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    // If already sorting by this key, toggle direction
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  // Get sorted data
+  const getSortedData = () => {
+    const sortableData = [...insightsData];
+    
+    sortableData.sort((a, b) => {
+      // Special case for priority which is calculated, not stored
+      if (sortConfig.key === 'priority') {
+        const priorityA = getPriorityDetails(a.bot_solved, a.human_needed).level;
+        const priorityB = getPriorityDetails(b.bot_solved, b.human_needed).level;
+        
+        // Convert priority levels to numeric values for comparison
+        const priorityValues = { 'Low': 1, 'Medium': 2, 'High': 3 };
+        const valueA = priorityValues[priorityA as keyof typeof priorityValues];
+        const valueB = priorityValues[priorityB as keyof typeof priorityValues];
+        
+        if (sortConfig.direction === 'ascending') {
+          return valueA - valueB;
+        } else {
+          return valueB - valueA;
+        }
+      }
+      
+      // Special case for status which might be undefined
+      if (sortConfig.key === 'status') {
+        const valueA = a.status || 'Not Solved';
+        const valueB = b.status || 'Not Solved';
+        
+        if (sortConfig.direction === 'ascending') {
+          return valueA.localeCompare(valueB);
+        } else {
+          return valueB.localeCompare(valueA);
+        }
+      }
+      
+      // Handle other fields
+      const valueA = a[sortConfig.key];
+      const valueB = b[sortConfig.key];
+      
+      if (valueA === null || valueA === undefined) return 1;
+      if (valueB === null || valueB === undefined) return -1;
+      
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        if (sortConfig.direction === 'ascending') {
+          return valueA.localeCompare(valueB);
+        } else {
+          return valueB.localeCompare(valueA);
+        }
+      }
+      
+      // For boolean values
+      if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
+        const numA = valueA ? 1 : 0;
+        const numB = valueB ? 1 : 0;
+        
+        if (sortConfig.direction === 'ascending') {
+          return numA - numB;
+        } else {
+          return numB - numA;
+        }
+      }
+      
+      return 0;
+    });
+    
+    return sortableData;
+  };
+
+  // Get sorted data
+  const sortedData = getSortedData();
+
+  // Helper function to get sort indicator
+  const getSortIndicator = (key: keyof InsightEntry | 'priority') => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'ascending' ? ' ↑' : ' ↓';
+    }
+    return '';
+  };
+
   return (
     <ProtectedRoute>
       <div className="container mx-auto px-4 py-8">
@@ -109,6 +221,41 @@ const InsightsPage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto bg-white dark:bg-gray-800 shadow-md rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort by:</div>
+              <div className="flex flex-wrap gap-2">
+                <button 
+                  onClick={() => requestSort('name')}
+                  className={`px-3 py-1 text-xs rounded-full ${sortConfig.key === 'name' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'}`}
+                >
+                  Name{getSortIndicator('name')}
+                </button>
+                <button 
+                  onClick={() => requestSort('priority')}
+                  className={`px-3 py-1 text-xs rounded-full ${sortConfig.key === 'priority' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'}`}
+                >
+                  Priority{getSortIndicator('priority')}
+                </button>
+                <button 
+                  onClick={() => requestSort('status')}
+                  className={`px-3 py-1 text-xs rounded-full ${sortConfig.key === 'status' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'}`}
+                >
+                  Status{getSortIndicator('status')}
+                </button>
+                <button 
+                  onClick={() => requestSort('emotion')}
+                  className={`px-3 py-1 text-xs rounded-full ${sortConfig.key === 'emotion' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'}`}
+                >
+                  Emotion{getSortIndicator('emotion')}
+                </button>
+                <button 
+                  onClick={() => requestSort('created_at')}
+                  className={`px-3 py-1 text-xs rounded-full ${sortConfig.key === 'created_at' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'}`}
+                >
+                  Date{getSortIndicator('created_at')}
+                </button>
+              </div>
+            </div>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-100 dark:bg-gray-700">
                 <tr>
@@ -119,10 +266,11 @@ const InsightsPage = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-300 uppercase tracking-wider">Human Needed?</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-300 uppercase tracking-wider">Emotion</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-300 uppercase tracking-wider">Priority</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-300 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {insightsData.map((entry) => {
+                {sortedData.map((entry) => {
                   const { level: priorityLevel, rowClass } = getPriorityDetails(entry.bot_solved, entry.human_needed);
                   return (
                     <tr key={entry.id} className={`${rowClass} transition-colors duration-150`}>
@@ -135,6 +283,17 @@ const InsightsPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {/* Display the priority level text */}
                         {priorityLevel}
+                      </td>
+                      <td className="px-1 py-4 whitespace-nowrap text-sm">
+                        <select 
+                          className="block w-auto rounded-md bg-violet-200 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+                          value={entry.status || 'Not Solved'}
+                          onChange={(e) => updateStatus(entry.id, e.target.value as StatusOption)}
+                        >
+                          <option value="Solved">Resolved</option>
+                          <option value="Processing">WIP</option>
+                          <option value="Not Solved">Non-Attended</option>
+                        </select>
                       </td>
                     </tr>
                   );
