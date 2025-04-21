@@ -125,6 +125,20 @@ class ConversationAnalyzer:
                 human_needed = analysis.get("Human Needed") or analysis.get("human_needed")
                 emotion = analysis.get("Emotion") or analysis.get("emotion")
                 
+                # Enforce logical consistency between bot_solved and human_needed
+                # If bot solved is True, human needed must be False
+                # If human needed is True, bot solved must be False
+                if bot_solved is True:
+                    human_needed = False
+                elif human_needed is True:
+                    bot_solved = False
+                
+                # Use default values for name and email if not detected
+                if not user_name:
+                    user_name = "testuser"
+                if not user_email:
+                    user_email = "testuser@gmail.com"
+                
                 insight = InsightCreate(
                     session_id=session_id,
                     name=user_name,

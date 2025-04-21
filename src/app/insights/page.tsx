@@ -30,17 +30,17 @@ const getPriorityDetails = (botSolved: boolean | null, humanNeeded: boolean | nu
   if (botSolved === false) {
     if (humanNeeded === true) {
       // High priority: Bot failed, human explicitly needed
-      return { level: 'High', rowClass: 'bg-red-100 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30' };
+      return { level: 'High', rowClass: 'bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30' };
     } else {
       // Medium priority: Bot failed, but no explicit human request (needs review)
-      return { level: 'Medium', rowClass: 'bg-yellow-100 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30' };
+      return { level: 'Medium', rowClass: 'bg-yellow-100 dark:bg-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-600' };
     }
   } else if (botSolved === true) {
     // Low priority: Bot solved the issue
-    return { level: 'Low', rowClass: 'bg-green-100 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30' };
+    return { level: 'Low', rowClass: 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30' };
   } else {
     // Default case when values are null
-    return { level: 'Medium', rowClass: 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600' };
+    return { level: 'Medium', rowClass: 'bg-yellow-100 dark:bg-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-600' };
   }
 };
 
